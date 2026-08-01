@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.juh5ng/k-data-mcp",
+  "description": "Korean market data for agents: kimchi premium on a tradeable USDT basis, premium history and percentiles, Korean news translated to English. Pay-per-call in USDC via x402 — no account or API key.",
+  "repository": {
+    "url": "https://github.com/juh5ng/k-data-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "k-data-mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "K_DATA_PRIVATE_KEY",
+          "description": "Private key of a dedicated wallet holding USDC on Base. Each tool call spends from it. No ETH needed - x402 settles off-chain and the facilitator pays gas.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "K_DATA_MAX_SPEND_USD",
+          "description": "Hard cap on cumulative spend for the session. The server refuses any call that would exceed it.",
+          "isRequired": false,
+          "default": "1"
+        },
+        {
+          "name": "K_DATA_BASE_URL",
+          "description": "Point at a different K-Data deployment.",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
