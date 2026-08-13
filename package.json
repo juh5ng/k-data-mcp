@@ -1,6 +1,6 @@
 {
   "name": "k-data-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for Korean market data — kimchi premium on a tradeable USDT basis, premium history and percentiles, Korean news translated to English. Pays per call in USDC via x402; no account or API key.",
   "keywords": [
     "mcp",
