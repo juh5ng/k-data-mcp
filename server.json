@@ -1,7 +1,7 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.juh5ng/k-data-mcp",
-  "description": "Korean market data for agents: kimchi premium on a tradeable USDT basis, premium history and percentiles, Korean sell-side research with analyst consensus and target-price revisions, Korean news translated to English. Pay-per-call in USDC via x402 — no account or API key.",
+  "description": "Korean market data: kimchi premium, sell-side research, news. Pay per call in USDC via x402.",
   "repository": {
     "url": "https://github.com/juh5ng/k-data-mcp",
     "source": "github"
