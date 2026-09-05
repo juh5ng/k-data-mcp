@@ -1,8 +1,9 @@
 {
   "name": "k-data-mcp",
-  "mcpName": "io.github.juh5ng/k-data-mcp",
-  "version": "0.2.1",
-  "description": "MCP server for Korean market data — kimchi premium on a tradeable USDT basis, premium history and percentiles, Korean news translated to English. Pays per call in USDC via x402; no account or API key.",
+  "mcpName": "io.github.juh5ng/korea-stock-research-mcp",
+  "version": "0.3.0",
+  "description": "MCP server for Korean equity research and market data — analyst ratings, target-price revision history, tradeable-basis kimchi premium, and Korean news in English. Wallet-free previews; pay per call in USDC via x402.",
+  "homepage": "https://k-data-x402-production.theblack1022.workers.dev",
   "keywords": [
     "mcp",
     "modelcontextprotocol",
@@ -13,7 +14,14 @@
     "crypto",
     "usdc",
     "base",
-    "agent-payments"
+    "agent-payments",
+    "korean-stocks",
+    "krx",
+    "kospi",
+    "equity-research",
+    "analyst-ratings",
+    "target-price",
+    "consensus"
   ],
   "license": "MIT",
   "type": "module",

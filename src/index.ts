@@ -16,10 +16,12 @@ import { x402Client, wrapFetchWithPayment } from "@x402/fetch";
 import { ExactEvmScheme } from "@x402/evm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
+import { clientMode } from "./client-mode.js";
 
 const BASE_URL = (process.env.K_DATA_BASE_URL ?? "https://k-data-x402-production.theblack1022.workers.dev").replace(/\/$/, "");
 const PRIVATE_KEY = process.env.K_DATA_PRIVATE_KEY as `0x${string}` | undefined;
 const BUDGET_USD = Number(process.env.K_DATA_MAX_SPEND_USD ?? "1");
+const MODE = clientMode(PRIVATE_KEY);
 
 interface CatalogEndpoint {
   method: string;
@@ -54,22 +56,7 @@ function priceToNumber(price: string): number {
 }
 
 async function main() {
-  if (!PRIVATE_KEY) {
-    console.error(
-      [
-        "K_DATA_PRIVATE_KEY is required.",
-        "",
-        "It must be the private key of a wallet holding USDC on Base. Every tool",
-        "call spends from it, so use a dedicated wallet funded with only what you",
-        "intend to spend — never your main wallet.",
-        "",
-        "No gas token is needed: x402 settles with an off-chain EIP-3009",
-        "signature and the facilitator pays the gas.",
-      ].join("\n"),
-    );
-    process.exit(1);
-  }
-  if (!Number.isFinite(BUDGET_USD) || BUDGET_USD <= 0) {
+  if (MODE.canSpend && (!Number.isFinite(BUDGET_USD) || BUDGET_USD <= 0)) {
     console.error("K_DATA_MAX_SPEND_USD must be a positive number of US dollars.");
     process.exit(1);
   }
@@ -81,10 +68,10 @@ async function main() {
   }
   const catalog = (await catalogRes.json()) as Catalog;
 
-  const account = privateKeyToAccount(PRIVATE_KEY);
-  const client = new x402Client();
-  client.register("eip155:*", new ExactEvmScheme(account));
-  const payingFetch = wrapFetchWithPayment(fetch, client);
+  const account = PRIVATE_KEY ? privateKeyToAccount(PRIVATE_KEY) : null;
+  const client = account ? new x402Client() : null;
+  if (client && account) client.register("eip155:*", new ExactEvmScheme(account));
+  const payingFetch = client ? wrapFetchWithPayment(fetch, client) : null;
 
   let spent = 0;
 
@@ -103,8 +90,9 @@ async function main() {
             {
               service: catalog.service,
               why_this_service: catalog.why_this_service,
-              wallet: account.address,
-              budget_usd: BUDGET_USD,
+              mode: MODE.label,
+              wallet: account?.address ?? null,
+              budget_usd: MODE.canSpend ? BUDGET_USD : null,
               spent_usd: +spent.toFixed(4),
               endpoints: catalog.paid_endpoints.map(e => ({
                 tool: toolNameFor(e.path),
@@ -118,6 +106,33 @@ async function main() {
         },
       ],
     }),
+  );
+
+  const callFree = async (path: string) => {
+    const res = await fetch(`${BASE_URL}${path}`);
+    const body = await res.text();
+    return res.ok
+      ? { content: [{ type: "text" as const, text: body }] }
+      : { isError: true, content: [{ type: "text" as const, text: `HTTP ${res.status}: ${body.slice(0, 500)}` }] };
+  };
+
+  server.tool(
+    "preview_research_coverage",
+    "Free, date-stamped KRX research coverage. Lists report and brokerage counts without report content.",
+    { limit: z.number().optional() },
+    async ({ limit }) => callFree(`/api/preview/research/coverage${limit ? `?limit=${limit}` : ""}`),
+  );
+  server.tool(
+    "preview_research",
+    "Free archive-depth check for one 6-digit KRX ticker. Shows coverage and dates without report content.",
+    { ticker: z.string() },
+    async ({ ticker }) => callFree(`/api/preview/research/${encodeURIComponent(ticker)}`),
+  );
+  server.tool(
+    "preview_kimchi_premium",
+    "Free live BTC-only dual-basis kimchi premium sample. The paid endpoint supports up to 10 symbols.",
+    {},
+    async () => callFree("/api/preview/kimchi-premium"),
   );
 
   for (const endpoint of catalog.paid_endpoints) {
@@ -144,6 +159,17 @@ async function main() {
       `${endpoint.description} Costs ${endpoint.price_usd} in USDC per call, charged to the configured wallet.`,
       shape,
       async (args: Record<string, unknown>) => {
+        if (!payingFetch) {
+          return {
+            isError: true,
+            content: [
+              {
+                type: "text",
+                text: "This client is in free-preview mode. Set K_DATA_PRIVATE_KEY to a dedicated Base USDC wallet and K_DATA_MAX_SPEND_USD to enable paid tools.",
+              },
+            ],
+          };
+        }
         if (spent + price > BUDGET_USD) {
           return {
             isError: true,
@@ -198,7 +224,9 @@ async function main() {
 
   await server.connect(new StdioServerTransport());
   console.error(
-    `k-data-mcp ready — ${catalog.paid_endpoints.length} paid tools, wallet ${account.address}, budget $${BUDGET_USD}`,
+    MODE.canSpend
+      ? `k-data-mcp ready — ${catalog.paid_endpoints.length} paid tools, wallet ${account?.address}, budget $${BUDGET_USD}`
+      : `k-data-mcp ready — free-preview mode, ${catalog.paid_endpoints.length} paid tools disabled until a wallet is configured`,
   );
 }
 

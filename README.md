@@ -1,6 +1,17 @@
 # k-data-mcp
 
-MCP server for **Korean market data**, metered per call in USDC over [x402](https://x402.org). No account, no API key, no signup — the server pays each request from a wallet you supply.
+MCP server for **Korean equity research and market data**, metered per call in USDC over [x402](https://x402.org). Start it without a wallet to inspect the catalog and run free, date-stamped previews; add a dedicated wallet only when you want paid calls.
+
+## Try before funding a wallet
+
+Run `npx k-data-mcp` with no environment variables to use these free tools:
+
+- `list_endpoints` — paid catalog and prices.
+- `preview_research_coverage` — real per-ticker report/brokerage counts and archive date ranges.
+- `preview_research` — a single ticker's actual archive depth; this does not disclose report content.
+- `preview_kimchi_premium` — live BTC-only dual-basis sample.
+
+Set `K_DATA_PRIVATE_KEY` and `K_DATA_MAX_SPEND_USD` only when you are ready to enable paid tools.
 
 ## What you get
 
