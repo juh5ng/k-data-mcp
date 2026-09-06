@@ -2,6 +2,9 @@ name: Publish Package
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - "v*"
 
 permissions:
   contents: read
@@ -21,4 +24,3 @@ jobs:
       - run: npm run build
       - run: node --experimental-strip-types --test test/client-mode.test.ts
       - run: npm publish --access public
-
