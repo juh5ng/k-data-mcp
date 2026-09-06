@@ -4,6 +4,10 @@
   "version": "0.3.0",
   "description": "MCP server for Korean equity research and market data — analyst ratings, target-price revision history, tradeable-basis kimchi premium, and Korean news in English. Wallet-free previews; pay per call in USDC via x402.",
   "homepage": "https://k-data-x402-production.theblack1022.workers.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juh5ng/k-data-mcp.git"
+  },
   "keywords": [
     "mcp",
     "modelcontextprotocol",
